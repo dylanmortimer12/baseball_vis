@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+
+<!-- Colleen and Dylan -->
+
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Interactive IV</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="graph-scroll.js"></script>
+    <script src="bball_plot.js" ></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+
+    <style type="text/css">
+        body{
+            /* max-width: 1100px; */
+            margin: 0px auto;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        h1{
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .title {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+
+        /* #menubar {
+            height: 100%;
+            width: 180px;
+            position: fixed;
+            z-index: 1;
+            top: 80;
+            left: 0;
+            background-color: white;
+            overflow-x: hidden;
+            padding-left: 20px;
+        } */
+
+        #menubar {
+          width: 180px;
+          position: sticky;
+          top: 20px;
+          left:40px;
+          float: left;
+        }
+
+
+        #container{
+            position: relative;
+        }
+
+        #sections{
+            width: 400px;
+            padding-bottom:300px;
+            padding-left:300px;
+            padding-right:20px;
+        }
+
+        #sections > section{
+            opacity: .2;
+            margin-bottom: 200px;
+        }
+
+        #sections > section.graph-scroll-active{
+            opacity: 1;
+        }
+
+        #graph{
+            width: 500px;
+            position: sticky;
+            top: 20px;
+            float: right;
+            margin-right: 60px;
+        }
+
+        #footer{
+            height:700px;
+        }
+
+       #tooltip{
+            position:absolute;
+            width:150px;
+            height:auto;
+            padding:10px;
+            background-color: white;
+            border-radius:10px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.4);
+            pointer-events: none;
+        }
+
+        #references{
+            margin-left: 40px;
+        }
+
+        #tooltip.hidden{
+            display:none;
+        }
+
+        #tooltip p{
+            margin:0;
+            font-family: sans-serif;
+            font-size:12px;
+        }
+
+        #graph svg{
+            border:solid 2px lightgrey;
+            padding-left: 20px;
+            padding-top:20px;
+        }
+
+        .btn {
+            border: none;
+            background-color: inherit;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-block;
+            border-radius: 4px;
+            color: dodgerblue;
+        }
+
+        .btn:hover {
+            background: #2196F3;
+            color: white;
+        }
+
+        .Years {
+            color: #2301a8;
+        }
+
+        .Years:hover {
+            color: white;
+            background-color: #2301a8;
+            border-radius:4px;
+        }
+
+    </style>
+</head>
+<body>
+
+  <div>
+    <h1>Baseball Through the Ages</h1>
+    <h3 class="title">By Colleen Caveney and Dylan Mortimer</h3>
+  </div>
+
+
+    <div id="container">
+
+      <div id="menubar">
+        <h2>Menu</h2>
+        <h3 style="margin:0">Choose a Statistic</h3>
+        <form id="inputForm">
+          <div><input type="radio" name="radioButton" checked=true id="RPG">Runs Per Game</input></div>
+          <div><input type="radio" name="radioButton" id="HR">Home Runs</input></div>
+          <div><input type="radio" name="radioButton" id="K">Strike Outs</input></div>
+          <div><input type="radio" name="radioButton" id="BB">Walks</input></div>
+        </form>
+        <h3 style="margin:0; margin-top:10px">Zoom in on on Era</h3>
+        <form id="inputForm">
+          <input type="checkbox" checked=false id="ZeroScale">Toggle Zoom</input>
+        </form>
+
+        <h3 style="margin:0; margin-top:10px">Show Data Points</h3>
+        <form id="inputForm">
+          <input type="checkbox" checked=false id="DotsToggle">Toggle Dots</input>
+        </form>
+
+        <div id="key">
+          <h3>Key</h3>
+          <ul id="legend_list" class="list-style"></ul>
+        </div>
+      </div>
+
+      <div id="graph"></div>
+
+      <div id="sections">
+
+        <section>
+            <h2>Pre 1900's</h2>
+            <p>The first National League game ever played was in <span class="Years" data="1876">1876</span>. With constantly changing rules,
+            the run scoring environment of this era fluctuates wildly compared to the following eras.</p>
+            <p>For example, an umpire crew was not formally required until <span class="Years" data="1879">1879</span>. In <span class="Years" data="1880">1880</span>, only 8 balls
+            were in an at-bat were necessary for a walk. Four years later, in <span class="Years" data="1884">1884</span>, only 6 balls; It was
+            not until <span class="Years" data="1889">1889</span> that 4 balls became the standard.</p>
+            <p>Select <span class="btn Walks">Walks</span> to see walks per game increase
+            fairly steadily through this time.</p>
+            <p>Additionally, the distance of the mound to home plate was increased from 50 ft to 60 ft and 6 inches in <span class="Years" data="1893">1893</span>,
+            significantly changing the difficulty of hitting.</p>
+            <p>Select <span class="btn Strikeouts">Strikeouts</span> per game or
+            <span class="btn Homeruns">Homeruns</span> per game to see these increase through
+            the pre-1900's era.</p>
+        </section>
+        <section>
+            <h2>Dead Ball Era</h2>
+            <p>In the Dead Ball Era we see overall scoring decrease from the Pre-1900's era when we look at
+            <span class="btn RunsPerGame">Runs Per Game</span>. </p>
+            <p>Homeruns initially decreased in the transition to the Dead Ball Era. The name 'Dead Ball Era' explains these
+            depressions in run scoring and homeruns, as the quality and material of the baseball had a lot to do with the
+            amount of runs scored at this time.</p>
+            <p>Until <span class="Years" data="1911">1911</span>, the baseball had
+            a soft rubber core, compared to the more kinetic cork-cored model that replaced it. Games would also be played
+            with the same ball until it was unusable. Nowadays the one game will use upwards of 50 brand new balls.</p>
+            <p>According to "The Strikeout Ascendant", the foul strike rule, adopted in <span class="Years" data="1901">1901</span> and <span class="Years" data="1903">1903</span> for the National and American Leagues
+            respectively, was a huge contributor to the run suppression of the Dead Ball Era. The Foul Strike Rule is
+            what made foul balls actually count as strikes, making hitting significantly more difficult.</p>
+            <p>Another important
+            consideration regarding the difficulty of hitting is that pitches involving foreign substances eg. the spitball were
+            legal. Unsurprisingly <span class="btn Strikeouts">Strikeouts</span> per game increases from the Pre-1900's Era until an unexplained late dip before
+            the Live Ball Era.</p>
+            </head>
+        </section>
+        <section>
+            <h2>Live Ball Era</h2>
+            <p>
+            The Live Ball Era began with any doctoring of the ball, eg. spitballs, being outlawed and with the replacement of dirty or scuffed balls during the game.
+            The later change was enacted largely in reaction to Ray Chapman's death, who was hit in the head with a scuffed baseball that got away from the pitcher.
+            The ball also became arguably harder and more kinetic when new yarn began to be used in its manufacturing.</p>
+            <p>Select <span class="btn Strikeouts">Strikeouts</span> to see a decline in the strikeout rate from the Deadball Era
+            into the Live Ball Era, thanks to balls having more predictable movement due to these changes.</p>
+            <p>We also see a clear increase in <span class="btn RunsPerGame">Runs Per Game</span> from the Dead Ball Era, with
+            teams sometimes scoring over 5 runs a game after scoring fewer than three over the course of certain years previous.
+            Additonally, an enormous jump in <span class="btn Homeruns">Homeruns</span> occured between the Dead Ball era into
+            the Live Ball Era. The average homerun rate more than doubled from <span class="Years" data="1918">1918</span> to
+            <span class="Years" data="1922">1922</span>.</p>
+            <p>Also within the Live Ball Era was an isolated impact on the game due to many good players fighting in WWII.
+            Runs and Homeruns sharply declined from <span class="Years" data="1940">1940</span> to <span class="Years" data="1943">1943</span> as a result.</p>
+        </section>
+        <section>
+            <h2>Integration Era</h2>
+            <p>On April 15th, <span class="Years" data="1947">1947</span>, Jackie Robinson broke Major League Baseball's Color Barrier.
+            Robinson debuted with the National League's Brooklyn Dodgers
+            and won Rookie of the Year. Only months later, Larry Doby became the first black player to play in the American League
+            with the Cleveland Indians. These two pioneers, among others, sparked baseball's integration era.</p>
+            <p>The integration era was
+            a time of fundamental change in baseball. If we look at <span class="btn Homeruns">Homeruns</span>, we can see that homerun production exploded.
+            Hitters started hitting with significantly more power, as the average homerun rate climbed to .84% in <span class="Years" data="1950">1950</span>,
+            shattering the previous high from <span class="Years" data="1940">1940</span> at .64%. The average homerun rate climbed even higher to .95% by the
+            end of the Integration Era in <span class="Years" data="1961">1961</span>.</p> <p>At the same time,
+            we see <span class="btn Strikeouts">Strikeouts</span> climbed at a similar pace. </p>
+            <p>It's clear that hitters' approaches were changing; They became less contact/slap oriented
+            and more geared towards swinging for the fences. The approach was high risk/high reward, reflected in these increases in homeruns and
+            strikeouts.</p>
+        </section>
+        <section>
+            <h2>Expansion Era</h2>
+            <p>The Expansion Era begins in the <span class="Years" data="1961">60's</span>, characterized by an increasing number of teams.
+            At this time, the American League added two new teams: the Los Angeles Angels and the Washington Senators.
+            The new Senators team replaced a former Washington Senators team that moved to Minnesota to become the Minnesota Twins. The
+            National League also added teams now known as the Houston Astros and the New York Mets.</p>
+            <p>We see that <span class="btn Strikeouts">Strikeouts</span> increased initially in the Expansion Era,
+            before regressing closer to the levels at the end of the Integration Era. We also see <span class="btn RunsPerGame">Runs Per Game</span>,
+            <span class="btn Homeruns">Homeruns</span>, and <span class="btn Walks">Walks</span> decrease noisily from
+            Integration Era levels in the Expansion Era.</p>
+            <p>These trends can be explained by an increase in the size of the strike zone in <span class="Years" data="1963">1963</span>. The
+            strike zone was not returned to its previous size until <span class="Years" data="1969">1969</span>.
+            The height of the pitcher's mound was also lowered by 5 inches in <span class="Years" data="1969">1969</span>.</p>
+            <p>Each of these rule changes significantly decreased pitchers' advantages over hitters. This is reflected in average strikeouts per game
+            fairly steadily decreasing through the rest of the Expansion Era. We also see a sharp increase in homeruns from
+            <span class="Years" data="1969">1969</span> to <span class="Years" data="1970">1970</span>.
+            Walks increased in <span class="Years" data="1969">1969</span>, likely due in large part to the tighter strikezone.</p>
+        </section>
+        <section>
+            <h2>Free Agent Era</h2>
+            <p>The Free Agent Era is unsurprisingly named so because in <span class="Years" data="1976">1976</span>, MLB owners agreed to let players become free agents on the conditions that
+            they had played out their contracts and had at least 6 years of service time. This was a fundamental change in the ways rosters were
+            constructed and teams built. Yet regardless of the introduction of Free Agency, the changes on the graph are
+            likely driven mostly by other factors. According to Steve Treder's article, many new stadiums built around the time of the Free Agent Era
+            were built with astroturf, rather than real grass, in the outfield. Additionally, outfields were being built with increased dimensions.</p>
+            <p>With bigger outfields and faster (fake) grass, teams tended to play smaller, quicker players rather than their larger power hitters. This explains an initial
+            dip in <span class="btn Homeruns">Homeruns</span> as well as <span class="btn Strikeouts">Strikeouts</span>,
+            given these smaller players were less likely to sell out for the long ball and strike out a lot.</p>
+            <p>Yet by the <span class="Years" data="1980">1980's</span>, teams had almost universally ditched astroturf and returned to natural grass. This change lead to the return of
+            power hitters. The results, as we can see, were jumps in homeruns and strikeouts as the <span class="Years" data="1970">1970's</span> turned into the
+            <span class="Years" data="1980">1980's</span>.</p>
+        </section>
+        <section>
+            <h2>Steriod Era</h2>
+            <p>The Steriod Era speaks for itself. <span class="btn Homeruns">Homeruns</span> skyrocketed to all time highs as hitters became more power/strength oriented than
+            ever, sometimes supplementing their training with performance enhancing drugs. Along with homeruns, <span class="btn Strikeouts">Strikeouts</span> also
+            reached all time highs as hitters focused on homeruns. <span class="btn RunsPerGame">Runs Per Game</span> was also at its highest rate since the height of
+            the Live Ball Era.</p>
+            <p>The Steriod Era will always be considered an era of shame for the game of baseball, yet also an era of incredible excitement.
+            In <span class="Years" data="1998">1998</span>, Mark McGwire shattered Roger Maris' single season homerun record of 61, hitting 70 for the St. Louis Cardinals. Only three years later,
+            Barry Bonds infamously broke McGwire's record, hitting 73 long balls in <span class="Years" data="2001">2001</span> for the San Francisco Giants. Both McGwire and Bonds were later
+            found out to be users of performance enhancing drugs. As of this page's development, neither have been elected to the Baseball Hall of Fame.</p>
+        </section>
+        <section>
+            <h2>Contemporary Era</h2>
+            <p>In <span class="Years" data="2007">2007</span>, a former senator and diplomat, George Mitchell,
+            released an MLB-commissioned report detailing MLB's ties to performance enhancing drugs. The
+            report linked 89 names to performance enhancing drugs and the fallout included a large number of
+            suspensions and a crackdown on the use of performance-enhancing drugs.</p>
+            <p><span class="btn Homeruns">Homeruns</span> per game had already begun to decline before the release of the Mitchell Report,
+            but began declining more dramatically after its release. <span class="btn RunsPerGame">Runs Per Game</span> began to decline significantly as well. </p>
+            <p>One should notice that something significant happened in <span class="Years" data="2015">2015</span>. Homerun numbers surged, out of nowhere,
+            to rates not seen since the Steriod Era. In <span class="Years" data="2016">2016</span>, homerun rates increased even more to the highest level in the history of baseball. What changed? Pitchers
+            theorized that the MLB started "juicing" the baseball midway through <span class="Years" data="2015">2015</span> in order to increase homeruns and excitement. Many pitchers also claimed to
+            be able to detect a difference in the feel of the ball. The MLB fervently denied this until <span class="Years" data="2018">2018</span>, when MLB Commissioner Rob Manfred acknowledged that
+            something had changed in the composition of the balls, although not under the intention of the MLB. Nonetheless, the baseballs became more aerodynamic and homerun production soared.</p>
+            <p>A related factor in increasing homeruns is a phenomenon called The Launch Angle Revolution. This involves
+            hitters intentionally trying to hit the ball in the air, rather than on the ground, in order to hit more doubles and homeruns.</p>
+            <p>We also see <span class="btn Strikeouts">Strikeouts</span> per game increase sharply and steadily in the contemporary era,
+            due in part to the previously mentioned emphasis placed on hitting homeruns by
+            more and more hitters. This increase is also partially explained by better pitchers throwing harder than they ever
+            have in the past. The average fastball velocity was 93.1 MPH in <span class="Years" data="2017">2017</span>,
+            compared to about 89 MPH in <span class="Years" data="2002">2002</span>. Players in general
+            are better trained and more athletic than they have every been; It is an exciting time for baseball.</p>
+
+        </section>
+
+      </div>
+
+  </div>
+
+  <div id="tooltip" class="hidden">
+    <p>
+      Year: <span id="year"></span><br />
+      R/G: <span id="RG_metric"></span><br />
+      HR: <span id="HR_metric"></span><br />
+      Strikeouts: <span id="K_metric"></span><br />
+      Walks: <span id="BB_metric"></span><br />
+    </p>
+  </div>
+
+  <div id="footer">
+    <div id="references">
+      <h3>References</h3>
+      <ul>
+        <li>Data: https://www.baseball-reference.com/leagues/MLB/bat.shtml#all_teams_standard_batting_totals</li>
+        <li>https://www.fangraphs.com/tht/the-strikeout-ascendant-and-what-should-be-done-about-it/</li>
+        <li>https://sabr.org/bioproj/person/c2ed02f9</li>
+        <li>https://baseballhall.org/hall-of-famers/robinson-jackie</li>
+        <li>https://baseballhall.org/hall-of-famers/doby-larry</li>
+        <li>https://baseballhall.org/discover/short-stops/free-agency-still-fuels-baseball</li>
+        <li>http://www.espn.com/mlb/story/_/id/22182872/george-mitchell-legacy-mitchell-report-peds-hall-fame</li>
+        <li>https://www.washingtonpost.com/news/sports/wp/2018/05/24/mlb-finally-admits-changes-to-ball-itself-fueled-home-run-spike-but-doesnt-say-how-or-why/?utm_term=.2f681cfaca93</li>
+        <li>https://www.washingtonpost.com/news/sports/wp/2018/03/23/mlb-tried-to-debunk-juiced-balls-theory-amid-historic-home-run-spike-pitchers-remain-skeptical/?utm_term=.a2c9a87f996c</li>
+        <li>https://www.mlb.com/news/mets-top-2017-statcast-fastball-velocity-ranks/c-216314410</li>
+        <li>https://www.denverpost.com/2018/06/19/mlb-fastball-paradox/</li>
+        <li>http://www.baseball-almanac.com/rulechng.shtml</li>
+        <li>http://web.colby.edu/baseball/files/2016/05/Blog_Post__3_Baseball_Era_Comparison__3_.pdf</li>
+      </ul>
+  </div>
+
+  </div>
+
+
+    <script>
+
+    $(document).ready(function(){
+      $(this).scrollTop(0);
+      });
+
+        d3.csv("bball_data.csv").then(function(data){
+
+            let step8_data = data.slice(0,15);
+            let step7_data = data.slice(14,25);
+            let step6_data = data.slice(24,42);
+            let step5_data = data.slice(41,58);
+            let step4_data = data.slice(57,73);
+            let step3_data = data.slice(72, 99);
+            let step2_data = data.slice(98,120);
+            let step1_data = data.slice(119,147);
+
+            let all_step2_data = data.slice(20,147);
+            let all_step3_data = data.slice(0,147);
+
+            const names = ["Pre 1900s", "Dead Ball Era", "Live Ball Era", "Integration Era", "Expansion Era", "Free Agent Era", "Steroid Era", "Contemporary Era"];
+
+            let mm_y_metrics = {'R/G':[9999999,0], 'HR':[9999999,0], 'SO':[9999999,0],'BB':[9999999,0]};
+            for(i=0; i<data.length; i++){
+              if(+data[i]['R/G']<mm_y_metrics['R/G'][0]){
+                mm_y_metrics['R/G'][0] = +data[i]['R/G'];
+              }
+              if(+data[i]['R/G']>mm_y_metrics['R/G'][1]){
+                mm_y_metrics['R/G'][1] = +data[i]['R/G'];
+              }
+              if(+data[i]['HR']<mm_y_metrics['HR'][0]){
+                mm_y_metrics['HR'][0] = +data[i]['HR'];
+              }
+              if(+data[i]['HR']>mm_y_metrics['HR'][1]){
+                mm_y_metrics['HR'][1] = +data[i]['HR'];
+              }
+              if(+data[i]['SO']<mm_y_metrics['SO'][0]){
+                mm_y_metrics['SO'][0] = +data[i]['SO'];
+              }
+              if(+data[i]['SO']>mm_y_metrics['SO'][1]){
+                mm_y_metrics['SO'][1] = +data[i]['SO'];
+              }
+              if(+data[i]['BB']<mm_y_metrics['BB'][0]){
+                mm_y_metrics['BB'][0] = +data[i]['BB'];
+              }
+              if(+data[i]['BB']>mm_y_metrics['BB'][1]){
+                mm_y_metrics['BB'][1] = +data[i]['BB'];
+              }
+            }
+
+            const svg = d3.select("#graph").append("svg")
+                .attr("width", 500)
+                .attr("height", 500);
+
+            const baseball_plot = create_run_plot(svg, 450, 450, mm_y_metrics, step1_data);
+
+            document.getElementById('DotsToggle').click();
+            document.getElementById('ZeroScale').click();
+
+            const gs = d3.graphScroll()
+                .container(d3.select("#container"))
+                .graph(d3.select("#graph"))
+                .eventId('sec1_id')
+                .sections(d3.selectAll("#container #sections > section"))
+                .on("active", function(i){
+                    vis_steps[i]();
+            });
+
+            for(i=0; i<document.getElementsByClassName('Walks').length; i++){
+              document.getElementsByClassName('Walks')[i].onclick = function(){
+                document.getElementById('BB').click();
+              };
+            }
+            for(i=0; i<document.getElementsByClassName('Strikeouts').length; i++){
+              document.getElementsByClassName('Strikeouts')[i].onclick = function(){
+                document.getElementById('K').click();
+              };
+            }
+            for(i=0; i<document.getElementsByClassName('Homeruns').length; i++){
+              document.getElementsByClassName('Homeruns')[i].onclick = function(){
+                document.getElementById('HR').click();
+              };
+            }
+            for(i=0; i<document.getElementsByClassName('RunsPerGame').length; i++){
+              document.getElementsByClassName('RunsPerGame')[i].onclick = function(){
+                document.getElementById('RPG').click();
+              };
+            }
+
+            for(i=0; i<document.getElementsByClassName('Years').length; i++){
+              let yearElement = document.getElementsByClassName('Years')[i];
+                yearElement.onmouseover = function(){
+                let year = yearElement.getAttribute("data");
+                baseball_plot.year_hover(year);
+                baseball_plot();
+              }
+            }
+
+            for(i=0; i<document.getElementsByClassName('Years').length; i++){
+              let yearElement = document.getElementsByClassName('Years')[i];
+              yearElement.onmouseout = function(){
+                baseball_plot.year_hover(undefined);
+                baseball_plot();
+              }
+            }
+
+            const functionStep1 = function(){
+              baseball_plot.add_data([step1_data]);
+              baseball_plot.add_name([names[0]]);
+              baseball_plot();
+            };
+            const functionStep2 = function(){
+              baseball_plot.add_data([step1_data,step2_data],2);
+              baseball_plot.add_name(names.slice(0,2));
+              baseball_plot();
+            };
+            const functionStep3 = function(){
+              baseball_plot.add_data([step1_data,step2_data,step3_data],3);
+              baseball_plot.add_name(names.slice(0,3));
+              baseball_plot();
+            };
+
+            const functionStep4 = function(){
+              baseball_plot.add_data([step1_data,step2_data,step3_data,step4_data],4);
+              baseball_plot.add_name(names.slice(0,4));
+              baseball_plot();
+            };
+
+            const functionStep5 = function(){
+              baseball_plot.add_data([step1_data,step2_data,step3_data,step4_data,
+                step5_data],5);
+              baseball_plot.add_name(names.slice(0,5));
+              baseball_plot();
+            };
+
+            const functionStep6 = function(){
+              baseball_plot.add_data([step1_data,step2_data,step3_data,step4_data,
+                step5_data,step6_data],6);
+              baseball_plot.add_name(names.slice(0,6));
+              baseball_plot();
+            };
+
+            const functionStep7 = function(){
+              baseball_plot.add_data([step1_data,step2_data,step3_data,step4_data,
+                step5_data,step6_data,step7_data],7);
+              baseball_plot.add_name(names.slice(0,7));
+              baseball_plot();
+            };
+
+            const functionStep8 = function(){
+              baseball_plot.add_data([step1_data,step2_data,step3_data,step4_data,
+                step5_data,step6_data,step7_data,step8_data],8);
+                baseball_plot.add_name(names.slice(0,8));
+              baseball_plot();
+            };
+
+            const vis_steps = [functionStep1, functionStep2,functionStep3,
+              functionStep4,functionStep5,functionStep6,functionStep7, functionStep8];
+
+
+            d3.select("#RPG")
+              .on("click", function(){
+                baseball_plot.y_metric("R/G");
+                baseball_plot();
+              });
+            d3.select("#HR")
+              .on("click", function(){
+                baseball_plot.y_metric("HR");
+                baseball_plot();
+              });
+            d3.select("#K")
+              .on("click", function(){
+                baseball_plot.y_metric("SO");
+                baseball_plot();
+              });
+            d3.select("#BB")
+              .on("click", function(){
+                baseball_plot.y_metric("BB");
+                baseball_plot();
+              });
+
+
+            d3.select("#ZeroScale")
+              .on("click", function(){
+                baseball_plot.zero_scale(d3.select("#ZeroScale").property("checked"));
+                baseball_plot();
+              });
+
+            d3.select("#DotsToggle")
+              .on("click", function(){
+                baseball_plot.dots_toggle(d3.select("#DotsToggle").property("checked"));
+                baseball_plot();
+              });
+
+
+
+
+
+        }).catch((err)=>{
+            console.log(err);
+        });
+
+
+    </script>
+</body>
+</html>
